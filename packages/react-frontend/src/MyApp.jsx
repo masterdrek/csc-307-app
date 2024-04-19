@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Table from "./Table";
 import Form from "./Form";
 
@@ -6,15 +6,71 @@ import Form from "./Form";
 function MyApp() {
   const [characters, setCharacters] = useState([]);
 
-  function removeOneCharacter(index) {
-    const updated = characters.filter((character, i) => {
-        return i !== index;
+  function fetchUsers() {
+    const promise = fetch("http://localhost:8000/users");
+    return promise;
+  }
+
+  function postUser(person) {
+    const promise = fetch("Http://localhost:8000/users", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(person),
     });
-    setCharacters(updated);
+    return promise;
   }
-  function updateList(person) {
-    setCharacters([...characters, person]);
+  
+  function deleteUser(id) {
+    const promise = fetch("Http://localhost:8000/users?id=" + id, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    return promise;
   }
+
+  
+  useEffect(() => {
+    fetchUsers()
+      .then((res) => res.json())
+      .then((json) => setCharacters(json["users_list"]))
+      .catch((error) => { console.log(error); });
+  }, [] );
+
+  function removeOneCharacter(id) {
+    deleteUser(id)
+      .then((res) => {
+        console.log("delete")
+        if(res.status != 204) 
+          throw new Error("delete failed");})
+      .then(() => {
+        const updated = characters.filter(
+          character => {return character.id !== id});
+        setCharacters(updated);})
+      .catch((error) => {
+        console.log(error);
+      })
+
+  }
+  
+  function updateList(person) { 
+    postUser(person)
+      .then((res) => {
+        console.log("add")
+        if(res.status != 201) 
+          throw new Error("update failed");
+          return res.json();
+          })
+      .then((json) => {
+        setCharacters([...characters, json])})
+      .catch((error) => {
+        console.log(error);
+      })
+}
 
   return (
     <div className="container">
