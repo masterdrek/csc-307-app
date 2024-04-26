@@ -49,7 +49,7 @@ function MyApp() {
           throw new Error("delete failed");})
       .then(() => {
         const updated = characters.filter(
-          character => {return character.id !== id});
+          character => {return character._id !== id});
         setCharacters(updated);})
       .catch((error) => {
         console.log(error);
@@ -66,7 +66,8 @@ function MyApp() {
           return res.json();
           })
       .then((json) => {
-        setCharacters([...characters, json])})
+        console.log(json)
+        setCharacters([...characters, json.users_list])})
       .catch((error) => {
         console.log(error);
       })
